@@ -1,0 +1,91 @@
+Package:
+  com.tapjoy.opt.config
+Class:
+ com.tapjoy.opt.config.OverallConfig
+
+  isProduction type=boolean value=true
+  productionS3 type=boolean value=false
+  healthCheck type=String value="/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62"
+  MODEL_OVERRIDE type=String value="324"
+  databaseServer type=String value="backup"
+  Email.HOST type=String value="smtp.gmail.com"
+  Email.USER type=String value="opt_root@tapjoy.com"
+  Email.PASSWORD type=String value="<aymT2HZ"
+  Email.PORT type=String value="465"
+  Email.FROM type=String value="opt_root@tapjoy.com"
+  Email.TO type=String value="opt@tapjoy.com"
+  Email.STARTTLS type=String value="true"
+  Email.AUTH type=String value="true"
+  Email.DEBUG type=String value="true"
+  Email.SOCKET_FACTORY type=String value="javax.net.ssl.SSLSocketFactory"
+  Email.SUBJECT type=String value="Optimization Status Update"
+  Email.TEXT type=String value="This is a test message from my java application. Just ignore it"
+  DatabaseServer$localbackup.name type=String value="backup"
+  DatabaseServer$localbackup.hostIp type=String value="127.0.0.1"
+  DatabaseServer$localbackup.databaseName type=String value="tapjoy"
+  DatabaseServer$localbackup.userName type=String value="dbadmin"
+  DatabaseServer$localbackup.passWord type=String value="TJ4ever!"
+  DatabaseServer$localbackup.port type=String value="5434"
+  DatabaseServer$localmain.name type=String value="main"
+  DatabaseServer$localmain.hostIp type=String value="127.0.0.1"
+  DatabaseServer$localmain.databaseName type=String value="tapjoy"
+  DatabaseServer$localmain.userName type=String value="dbadmin"
+  DatabaseServer$localmain.passWord type=String value="TJ4ever!"
+  DatabaseServer$localmain.port type=String value="5433"
+  DatabaseServer$backup.name type=String value="backup"
+  DatabaseServer$backup.hostIp type=String value="50.19.61.148"
+  DatabaseServer$backup.databaseName type=String value="tapjoy"
+  DatabaseServer$backup.userName type=String value="dbadmin"
+  DatabaseServer$backup.passWord type=String value="TJ4ever!"
+  DatabaseServer$backup.port type=String value="5433"
+  DatabaseServer$main.name type=String value="main"
+  DatabaseServer$main.hostIp type=String value="10.94.101.41"
+  DatabaseServer$main.databaseName type=String value="tapjoy"
+  DatabaseServer$main.userName type=String value="dbadmin"
+  DatabaseServer$main.passWord type=String value="TJ4ever!"
+  DatabaseServer$main.port type=String value="5433"
+  OFFER.DEEP_LINK_OFFER type=String value="DeeplinkOffer"
+  Cache.AllOfferTTL type=int value=6000
+  SQL.MIN_ALL_OFFER_SIZE type=int value=500
+  SQL.SLEEP_IN_SECONDS type=int value=10
+  S3$Test.S3_BUCKET_NAME type=String value="tj-optimization-test"
+  S3$Test.S3_BUCKET_KEY type=String value="unittest/"
+  S3$Production.S3_BUCKET_NAME type=String value="tj-optimization"
+  S3$Production.S3_BUCKET_KEY type=String value=""
+  S3Cred.aws_access_key_id type=String value="AKIAJ46RRH6TIM5BJ44A"
+  S3Cred.aws_secret_access_key type=String value="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"
+
+Package:
+  com.tapjoy.opt.linear_regression.config
+Class:
+ com.tapjoy.opt.linear_regression.config.Configuration
+
+  S3LocalCopyDir type=String value="/tmp/LeiTest1"
+  algorithms type=String[] value=["324","330","350","999"]
+  Ranking.OPT_GLOBAL type=boolean value=true
+  Ranking.OPT_COUNTRY type=boolean value=true
+  Ranking.OPT_APP type=boolean value=false
+  Platform.OFFERWALL type=int value=0
+  Platform.TJM type=int value=1
+  OS.IOS type=String value="iOS"
+  OS.ANDROID type=String value="Android"
+  OS.activeOs type=String[] value=["iOS","Android"]
+
+Package:
+  com.tapjoy.opt.conversion_matrix.config
+Class:
+ com.tapjoy.opt.conversion_matrix.config.Configuration
+
+  FRONT_APPEND type=int value=1
+  WEIGHT_BOOST type=int value=2
+  ACTIVE_STRATEGY type=int value=1
+  HIST_THRES type=int value=3
+  OFFERWALL_CF_THRES type=int value=10
+  RT_TABLE_NAME type=String value="conversion_history"
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.Configuration
+
+  

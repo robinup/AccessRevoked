@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="com.tapjoy.opt.conversion_matrix.config.Configuration"/>
+<fullyQualifiedTypeName name="java.util.Iterator"/>
+<fullyQualifiedTypeName name="java.io.BufferedReader"/>
+<fullyQualifiedTypeName name="java.io.InputStreamReader"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.featured_logit.FeaturedLogisticRegressionResourceManager"/>
+<fullyQualifiedTypeName name="java.util.concurrent.Callable"/>
+<fullyQualifiedTypeName name="java.util.concurrent.Executors"/>
+<fullyQualifiedTypeName name="org.apache.hadoop.hbase.executor.ExecutorService"/>
+<fullyQualifiedTypeName name="java.util.concurrent.ExecutorService"/>
+<fullyQualifiedTypeName name="java.util.concurrent.Future"/>
+<fullyQualifiedTypeName name="java.util.concurrent.TimeUnit"/>
+<fullyQualifiedTypeName name="java.util.concurrent.CountDownLatch"/>
+<fullyQualifiedTypeName name="java.io.BufferedInputStream"/>
+<fullyQualifiedTypeName name="java.lang.Byte"/>
+<fullyQualifiedTypeName name="org.apache.hadoop.hdfs.util.ByteArray"/>
+<fullyQualifiedTypeName name="java.io.ObjectInputStream"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.sql.Token"/>
+<fullyQualifiedTypeName name="com.vertica.jdbc.VerticaConnection"/>
+<fullyQualifiedTypeName name="com.mysql.jdbc.Connection"/>
+<fullyQualifiedTypeName name="java.sql.Connection"/>
+<fullyQualifiedTypeName name="org.apache.hadoop.hbase.client.HTableInterface"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.config.OverallConfig"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.logistic_regression.DataPackage"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.offerlist.CompoundRow"/>
+<fullyQualifiedTypeName name="com.tapjoy.opt.offerlist.CompoundRow.CompoundRowNewCompare"/>
+<fullyQualifiedTypeName name="java.io.File"/>
+<fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
+<fullyQualifiedTypeName name="java.util.Date"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+</qualifiedTypeNameHistroy>

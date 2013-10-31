@@ -1,0 +1,175 @@
+computeStaticSegments()--offerlist for key: 999.0.Android.US..android
+computeStaticSegments()--offerlist for key: 350.0.iOS.FX..itouch
+computeStaticSegments()--offerlist for key: 350.1.iOS.KR..iphone
+computeStaticSegments()--offerlist for key: 350.1.iOS.HK..ipad
+computeStaticSegments()--offerlist for key: 330.0.iOS...iphone
+computeStaticSegments()--offerlist for key: 350.0.iOS.GB..ipad
+computeStaticSegments()--offerlist for key: 350.1.iOS.RU..itouch
+computeStaticSegments()--offerlist for key: 350.1.iOS.IL..iphone
+computeStaticSegments()--offerlist for key: 350.0.iOS.NL..iphone
+computeStaticSegments()--offerlist for key: 350.1.Android.MY..android
+computeStaticSegments()--offerlist for key: 350.0.Android.CN..android
+computeStaticSegments()--offerlist for key: 350.1.iOS.CN..ipad
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Reloading Resource -- ConversionMatrix
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Waiting for resource manager initialization
+Server is up, ready to serve requests
+REQUEST_URL:/?command=offerwall&algorithm=680&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208137333000normal2013-10-23 09:24:17.9981topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=324&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208132032000normal2013-10-23 09:24:49.6951topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=324&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd3240011367755208131967000normal2013-10-23 09:24:56.2471200:regular
+REQUEST_URL:/?command=offerwall&algorithm=34234&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd34234001136775520813error2013-10-23 09:25:22.6141422:unprocessable
+REQUEST_URL:/?command=offerwall&algorithm=350&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131976000normal2013-10-23 09:25:49.4571topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=350&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131908000normal2013-10-23 09:26:07.6561topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=350&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 74121000 nanoseconds.
+getOneRecordRT key routines takes 72464000 nanoseconds.
+hbasetest udid=001136775520813 table= 2 HBase query returned empty | time=76784000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081379275000backup2013-10-23 09:26:15.3371topk200:regular
+getOneRecordRT key routines takes 108558000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=350&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131678000normal2013-10-23 09:26:22.9231topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=680&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 71896000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=75817000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081378007000backup2013-10-23 09:26:33.6111topk200:regular
+getOneRecordRT key routines takes 76997000 nanoseconds.
+getOneRecordRT key routines takes 106278000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=680&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 35958000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=36967000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081338846000backup2013-10-23 09:26:35.5101topk200:regular
+getOneRecordRT key routines takes 38924000 nanoseconds.
+getOneRecordRT key routines takes 70491000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=999&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 73085000 nanoseconds.
+getOneRecordRT key routines takes 72620000 nanoseconds.
+hbasetest udid=001136775520813 table= 2 HBase query returned empty | time=73819000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081375863000backup2013-10-23 09:26:48.9941topk200:regular
+getOneRecordRT key routines takes 108600000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=999&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 36500000 nanoseconds.
+getOneRecordRT key routines takes 36219000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=37449000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081339477000backup2013-10-23 09:26:55.2751topk200:regular
+getOneRecordRT key routines takes 72040000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=999&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 36506000 nanoseconds.
+getOneRecordRT key routines takes 36176000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=37614000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081339597000backup2013-10-23 09:26:58.5881topk200:regular
+getOneRecordRT key routines takes 71984000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=999&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 36616000 nanoseconds.
+getOneRecordRT key routines takes 36479000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=37854000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081339931000backup2013-10-23 09:27:02.4331topk200:regular
+getOneRecordRT key routines takes 72083000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd99001136775520813error2013-10-23 09:27:13.9071422:unprocessable
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131712000normal2013-10-23 09:27:16.2191topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 73468000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=76119000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081378173000backup2013-10-23 09:27:21.2801topk200:regular
+getOneRecordRT key routines takes 76588000 nanoseconds.
+getOneRecordRT key routines takes 108764000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 36402000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=37192000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+getOneRecordRT key routines takes 37097000 nanoseconds.
+dfassd680100113677552081339252000backup2013-10-23 09:27:28.2871topk200:regular
+getOneRecordRT key routines takes 71765000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131696000normal2013-10-23 09:27:31.1771topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131663000normal2013-10-23 09:27:34.8611topk200:regular
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+getOneRecordRT key routines takes 36573000 nanoseconds.
+hbasetest udid=001136775520813 table= 0 HBase query returned empty | time=37608000
+udid 001136775520813 HBase returns empty
+udid 001136775520813 no history or retrieval overtime; serving 324 list
+dfassd680100113677552081339835000backup2013-10-23 09:27:36.5511topk200:regular
+getOneRecordRT key routines takes 38662000 nanoseconds.
+getOneRecordRT key routines takes 72077000 nanoseconds.
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd99001136775520813error2013-10-23 09:27:38.6981422:unprocessable
+REQUEST_URL:/?command=offerwall&algorithm=99&test=true&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+TEST99001136775520813error2013-10-23 09:27:58.8321422:unprocessable
+NULLabnormal2013-10-23 09:28:15.090200:Bad request from web crawler with an IP /127.0.0.1:43101
+REQUEST_URL:/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62
+CHECK32412345596000normal2013-10-23 09:28:22.6461200:check
+REQUEST_URL:/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62
+CHECK32412345578000normal2013-10-23 09:28:27.1021200:check
+REQUEST_URL:/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62
+CHECK32412345586000normal2013-10-23 09:28:32.0181200:check
+Reloading Global Resources
+OfferCache resetMap
+OfferCache resetMap
+REQUEST_URL:/?command=offerwall&algorithm=99&test=true&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+TEST99001136775520813error2013-10-23 09:28:37.4501422:unprocessable
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd32400011367755208131653000normal2013-10-23 09:28:41.6231topk200:regular
+Reloading Resource -- ConversionMatrix
+REQUEST_URL:/?command=offerwall&algorithm=99&ad_view_id=dfassd&source=featured&platform=Android&device_type=iphone&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dfassd3240001136775520813abnormal2013-10-23 09:29:04.0981topk200:known platform
+REQUEST_URL:/?command=offerwall&type=2&algorithm=99&ad_view_id=dafdags&source=featured&platform=Android&device_type=iphone&offer_count=30&hide_rewarded_app_installs=false&app_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&udid=001136775520813&currency_id=370b1d6f-5560-4f44-adf4-c6046ccc4b37&ip_addr=190.235.101.121&currency_exchange_rate=1500&locale=es/
+dafdags2100011367755208134392000normal2013-10-23 09:29:54.9232200:regular
+NULLerror2013-10-23 09:30:11.029404:Not Found!
+NULLerror2013-10-23 09:30:21.213Illegal URL!
+NULLabnormal2013-10-23 09:30:27.497200:Bad request from web crawler with an IP /127.0.0.1:55327
+REQUEST_URL:/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62
+CHECK32412345573000normal2013-10-23 09:30:37.2201200:check

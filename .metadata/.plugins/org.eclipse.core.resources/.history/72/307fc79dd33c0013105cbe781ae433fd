@@ -1,0 +1,848 @@
+package com.tapjoy.opt.common;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+ 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.HTablePool;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Put;
+
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+
+import com.tapjoy.opt.sql.Token;
+
+
+//revised by LJ 08-23
+public class HBaseConn {
+	
+    private static Configuration conf = null;
+    private static HTablePool htpool = null;
+    
+    private static Logger logger = Logger.getLogger(HBaseConn.class);
+    
+    private static HTableInterface rttable = null;  //realtime table
+    
+    /**
+     * Initialization
+     */
+    public static void init(){
+    	conf = HBaseConfiguration.create();
+    	htpool = new HTablePool(conf, 20);
+
+    	if (conf == null || htpool == null ) {
+    		logger.error("HBase init -- hbase init failed! " );
+    	}
+    }
+    
+    public static void init(String rttablename){
+    	conf = HBaseConfiguration.create();
+    	htpool = new HTablePool(conf, 20);
+    	initRTTable(rttablename);
+    	if (conf == null || htpool == null || rttable == null) {
+    		logger.error("HBase init -- hbase init failed! " );
+    	}
+    }
+    
+    public static void shutdown()
+    {
+    	if(rttable != null)
+    	{  		
+    		try {
+				rttable.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	if(htpool != null)
+    	{
+    		try {
+			htpool.close();
+    		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+    		}
+    	}
+    	conf = null;
+    }
+    
+    //for real-time performance enhancement, this table object should be created beforehand -- LJ 
+    public static HTableInterface getRTTable()
+    {
+    	return rttable;
+    }
+    
+    public static void setRTTable(HTableInterface newtable)
+    {
+    	rttable = newtable;
+    }
+    
+    public static HTablePool getHPool()
+    {
+    	return htpool;
+    }
+    
+    public static HTableInterface initRTTable(String tablename)
+    {
+    	if(htpool == null)
+    	{
+    		logger.warn("real-time table can't be established now as htpool has a problem! htpool init now");
+    		htpool = new HTablePool(conf, 20);
+    	}
+    	rttable = htpool.getTable(tablename);
+    	//logger.info("real time table object initiated: "+tablename);
+    	return rttable;
+    }
+    
+    public static HTableInterface initTable(String tablename)
+    {
+    	if(htpool == null)
+    	{
+    		logger.warn("real-time table can't be established now as htpool has a problem! htpool init now");
+    		htpool = new HTablePool(conf, 20);
+    	}
+    	return htpool.getTable(tablename);
+    }
+   
+    public static class HBaseGetCallable implements Callable<Result>
+    {
+    	public HBaseGetCallable(String udid, int token, HTableInterface table, CountDownLatch doneSignal)
+    	{
+    		this.udid = udid;
+    		this.token = token;
+    		htable = table;
+    		this.doneSignal = doneSignal;
+    	}
+    	
+    	private String udid = "";
+    	private int token = -1;
+    	private HTableInterface htable = null;
+    	private CountDownLatch doneSignal;
+
+		@Override
+		public Result call() throws Exception {
+			// TODO Auto-generated method stub
+			Result res = HBaseConn.getOneRecordInTable2(udid, htable, token);
+			doneSignal.countDown();
+			return res;
+		}
+    	
+    }
+    
+    public static class VerticaGetCallable implements Callable<String>
+    {
+    	public VerticaGetCallable(Connection conn, CountDownLatch doneSignal)
+    	{
+    		this.conn = conn;
+    		this.doneSignal = doneSignal;
+    	}
+    	
+    	private Connection conn;
+    	private CountDownLatch doneSignal;
+
+		@Override
+		public String call() throws Exception {
+			// TODO Auto-generated method stub
+			String res = Token.getToken(conn);
+			doneSignal.countDown();
+			return res;
+		}
+    	
+    }
+    
+    public static int getTokenForTableKey() throws ClassNotFoundException, SQLException
+    {
+    	Connection conn = VerticaConn.getConnectionNew("verticaprod", "analytics");
+    	Connection conn2 = VerticaConn.getConnectionNew("verticaprod2", "analytics");
+    	
+    	ExecutorService executor = Executors.newFixedThreadPool(2);
+    	List<Future<String>> resultlist = new ArrayList<Future<String>>();
+    	
+    	CountDownLatch doneSignal = new CountDownLatch(2);
+    	
+    	
+    	Callable<String> worker = new VerticaGetCallable(conn, doneSignal);
+    	Future<String> submit = executor.submit(worker);
+    	resultlist.add(submit);
+    	
+    	worker = new VerticaGetCallable(conn2, doneSignal);
+    	Future<String> submit2 = executor.submit(worker);
+    	resultlist.add(submit2);
+    	
+    	int maxtoken = Integer.MIN_VALUE;
+    	
+    	try {
+			doneSignal.await(15, TimeUnit.SECONDS);
+			for(Future<String> future: resultlist)
+	    	{
+				String res = null;
+				if( (res = future.get(25, TimeUnit.MILLISECONDS)) != null && !res.isEmpty())
+				{
+					int tmpv = Integer.parseInt(res);
+					if(tmpv > maxtoken)
+						maxtoken = tmpv;
+				}
+	    	}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	finally
+    	{
+    		executor.shutdown();
+    	}
+    	return maxtoken;
+    }
+    
+    public static Result getOneRecordInTableNew(String rowKey, int token, ArrayList<HTableInterface> tables)  //written on Oct 11. The rowkey mechanism doesn't work for now
+    {
+    	if(tables == null || tables.isEmpty())
+    		return null;
+    	int tsize = tables.size();
+    	ExecutorService executor = Executors.newFixedThreadPool(tsize);
+    	List<Future<Result>> resultlist = new ArrayList<Future<Result>>();
+    	
+    	CountDownLatch doneSignal = new CountDownLatch(tsize);
+    	
+    	for(HTableInterface table: tables)
+    	{
+    		Callable<Result> worker = new HBaseGetCallable(rowKey, token ,table, doneSignal);
+    		Future<Result> submit = executor.submit(worker);
+    		resultlist.add(submit);
+    	}
+    	
+    	boolean resultflag = false;
+    	Result res = null;
+    	
+    	//we mean to make the main thread blocked for 35 ms given the current network traffic to HBase server
+    	if(doneSignal.getCount() >= tsize) 
+    	{
+			try {
+				Thread.sleep(35);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    
+    	try
+    	{
+	    	while(!resultflag)
+	    	{
+	    		try {  		
+	    			for(Future<Result> future: resultlist)
+	    	    	{
+	    				if( (res = future.get(25, TimeUnit.MICROSECONDS)) != null && !res.isEmpty())
+	   				 	{
+	    					//System.out.println("fastest table num = "+ind);
+	    					return res;
+	   				 	}
+	    	    	}
+	    		} catch (TimeoutException e) {
+					// TODO Auto-generated catch block
+					try {
+						if(doneSignal.getCount() >= tsize)
+							Thread.sleep(1);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				} 			 
+	    	}
+    	}
+    	catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			resultflag = true;
+			e.printStackTrace();
+			return null;
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+    	finally
+    	{
+    		executor.shutdown();
+    	}
+    	return res;
+    }
+    
+
+    public static Result getOneRecordInTableWithTimeout(String udid, int token, ArrayList<HTableInterface> tables, long timeoutparam)  //timeout parameter in milliseconds
+    {
+    	if(tables == null || tables.isEmpty())
+    		return null;
+    	int tsize = tables.size();
+    	ExecutorService executor = Executors.newFixedThreadPool(tsize);
+    	List<Future<Result>> resultlist = new ArrayList<Future<Result>>();
+    	
+    	CountDownLatch doneSignal = new CountDownLatch(tsize);
+    	long starttime  =  System.nanoTime();
+    	
+    	for(HTableInterface table: tables)
+    	{
+    		Callable<Result> worker = new HBaseGetCallable(udid, token, table, doneSignal);
+    		Future<Result> submit = executor.submit(worker);
+    		resultlist.add(submit);
+    	}
+    
+    	Result res = null;
+    	
+    	if(doneSignal.getCount() >= tsize)  //this is the time we have to wait for network traffic
+    	{
+			try {
+				Thread.sleep(35);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	while(System.nanoTime()-starttime <= timeoutparam*1000000)
+    	{
+    		try { 		
+    			for(int ind=0; ind < tsize; ind++)
+    			{
+    				try
+    				{
+    					res = resultlist.get(ind).get(150, TimeUnit.MICROSECONDS);
+    					if(res != null)
+    					{
+    						long restime = System.nanoTime()-starttime;
+    						if(res.isEmpty())
+    						{
+    							logger.info("hbasetest udid="+udid+" table= "+ind+" HBase query returned empty | time="+restime);
+    							System.out.println("hbasetest udid="+udid+" table= "+ind+" HBase query returned empty | time="+restime);
+    							
+    						}
+    						else
+    						{	
+    							logger.info("hbasetest udid="+udid+" table= "+ind+" returned with history | time="+restime);
+    							System.out.println("hbasetest udid="+udid+" table= "+ind+" returned with history | time="+restime);
+    						}
+    						executor.shutdown(); 
+							return res;
+    					}
+    				}
+    				catch (TimeoutException e) {
+    					continue;
+    				}
+    			}
+    		 }
+             catch (InterruptedException e) {
+				e.printStackTrace();
+				break;
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+				break;
+			} 	
+    		
+			if(doneSignal.getCount() >= tsize)
+			{
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+    	}
+    	
+    	long to = timeoutparam *1000000; 
+    	logger.info("hbasetest udid="+udid+" self-timeout | time="+ to);
+    	System.out.println("hbasetest udid="+udid+" self-timeout | time="+to);
+    	executor.shutdown();
+    	return null;
+    }
+    
+ 
+    /**
+     * Create a table
+     */
+    public static boolean createTable(String tableName, String[] familys) {	
+    	HBaseAdmin admin = null;
+		try {
+			admin = new HBaseAdmin(conf);
+		
+    		if (admin.tableExists(tableName)) {
+    			logger.error("HBase creatTable - table already exists!  -- tableName: " + tableName);
+    		} else {
+    			HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+    			for (int i = 0; i < familys.length; i++) {
+    				tableDesc.addFamily(new HColumnDescriptor(familys[i]));
+    			}
+    			admin.createTable(tableDesc);
+    			logger.debug("HBase create table - " + tableName + " - ok.");
+    			return true;
+    		}
+    		
+    	} catch (Exception e) {
+    		logger.error("HBase creatTable - Exception happend. TableName: " + tableName);
+    		e.printStackTrace();
+    	}
+    	finally
+    	{
+    		if(admin != null)
+				try {
+					admin.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    	}
+    	return false;
+    }
+ 
+    /**
+     * Delete a table
+     */
+    public static boolean deleteTable(String tableName) {
+    	HBaseAdmin admin = null;
+        try {
+            admin = new HBaseAdmin(conf);
+            admin.disableTable(tableName);
+            admin.deleteTable(tableName);
+            logger.debug("HBase delete table - " + tableName + " - ok.");
+            return true;
+        }  catch (Exception e) {
+    		logger.error("HBase deleteTable - Exception happend. TableName: " + tableName);
+    		e.printStackTrace();
+    	}
+    	finally
+    	{
+    		if(admin != null)
+				try {
+					admin.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    	}
+        return false;
+    }
+    
+    /*
+     * List all the table names by LJ
+     */
+    public static String[] listTableNames()
+    {
+    	HBaseAdmin admin = null;
+        try {
+            admin = new HBaseAdmin(conf);
+            HTableDescriptor[] tables = admin.listTables();
+            logger.debug("HBase table listed - " + " - ok.");
+            String[] tablenames = new String[tables.length];
+            for(int i=0; i< tables.length; i++)
+            	tablenames[i] = tables[i].getNameAsString();
+            return tablenames;
+        }  catch (Exception e) {
+    		logger.error("HBase listTables - Exception happend.");
+    		e.printStackTrace();
+    	}
+    	finally
+    	{
+    		if(admin != null)
+    		{
+				try {
+					admin.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    	}
+        return new String[1];
+    }
+ 
+    /**
+     * Put (or insert) a row
+     */
+    public static boolean addRecord(String tableName, String rowKey, String family, String qualifier, String value) {
+    	HTableInterface table = htpool.getTable(tableName);
+        try {      	
+            Put put = new Put(Bytes.toBytes(rowKey));
+            put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes
+                    .toBytes(value));
+            table.put(put);
+            logger.debug("HBase insert record " + rowKey + " to table " + tableName + " ok.");
+            return true;
+        } catch (IOException e) {
+        	logger.error("HBase addRecord - Exception happend. TableName: " + tableName + "; RowKey: " + rowKey);
+            e.printStackTrace();
+        }
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        
+        return false;
+    }
+    
+    //added by LJ
+    public static boolean checkandaddRecord(String tableName, String rowKey, String family, String qualifier, String value) {
+    	HTableInterface table = htpool.getTable(tableName);
+        try {      	
+            table.checkAndPut(Bytes.toBytes(rowKey), Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes
+                    .toBytes(value), null);
+            logger.debug("HBase checked and insert record " + rowKey + " to table " + tableName + " ok.");
+            return true;
+        } catch (IOException e) {
+        	logger.error("HBase checkandaddRecord - Exception happend. TableName: " + tableName + "; RowKey: " + rowKey);
+            e.printStackTrace();
+        }
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        return false;
+    }
+ 
+    /**
+     * Delete a row
+     */
+    public static boolean delRecord(String tableName, String rowKey) {
+    	HTableInterface table = htpool.getTable(tableName);
+    	try {
+			List<Delete> list = new ArrayList<Delete>();
+			Delete del = new Delete(rowKey.getBytes());
+			list.add(del);
+			table.delete(list);
+			logger.debug("HBase del record ok. TableName: " + tableName + "; Rowkey: " + rowKey );
+			return true;
+		} catch (IOException e) {
+			logger.error("HBase delRecord - Exception happend. TableName: " + tableName + "; RowKey: " + rowKey);
+			e.printStackTrace();
+		}
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+    	return false;
+    }
+ 
+    /**
+     * Get a row
+     */
+    public static Result getOneRecord (String tableName, String rowKey) {
+    	
+    	HTableInterface table = htpool.getTable(tableName);
+    	
+        try {		
+        	long startTS = System.nanoTime();
+			Get get = new Get(rowKey.getBytes());
+			Result rs = table.get(get);
+			long endTS = System.nanoTime();
+			System.out.println("HBase: getOneRecord key routines takes "+(endTS-startTS)+" nanoseconds.");
+			logger.info("HBase: getOneRecord key routines takes "+(endTS-startTS)+" nanoseconds.");
+			return rs; 
+			/*
+			for(KeyValue kv : rs.raw()){
+			    System.out.print(new String(kv.getRow()) + " " );
+			    System.out.print(new String(kv.getFamily()) + ":" );
+			    System.out.print(new String(kv.getQualifier()) + " " );
+			    System.out.print(kv.getTimestamp() + " " );
+			    System.out.println(new String(kv.getValue()));
+			}
+			*/
+		} catch (IOException e) {
+			logger.error("HBase getOneRecord - Exception happend. TableName: " + tableName + "; RowKey: " + rowKey);
+			e.printStackTrace();
+		}
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        return null;
+    }
+    
+    public static Result getOneRecordRT (String rowKey, String tablename) {  //added by LJ
+        try {	
+        	if(rttable == null)
+				initRTTable(tablename);
+        	long startTS = System.nanoTime();
+			Get get = new Get(rowKey.getBytes());
+			Result rs = rttable.get(get);
+			long endTS = System.nanoTime();
+			logger.info("getOneRecordRT key routines takes "+ (endTS-startTS)+ " nanoseconds.");
+			return rs; 
+		} catch (IOException e) {
+			logger.error("HBase getOneRecord - Exception happend. TableName: " + Bytes.toString(rttable.getTableName()) + "; RowKey: " + rowKey);
+			e.printStackTrace();
+		}
+        return null;
+    }
+    
+    public static Result getOneRecordInTable(String rowKey, HTableInterface table) {  //added by LJ
+        try {	
+        	long startTS = System.nanoTime();
+			Get get = new Get(rowKey.getBytes());
+			Result rs = table.get(get);
+			long endTS = System.nanoTime();
+			logger.info("getOneRecordRT key routines takes "+ (endTS-startTS)+ " nanoseconds.");
+			return rs; 
+		} catch (IOException e) {
+			logger.error("HBase getOneRecord - Exception happend. TableName: " + Bytes.toString(rttable.getTableName()) + "; RowKey: " + rowKey);
+			e.printStackTrace();
+		}
+        return null;
+    }
+    
+    public static Result getOneRecordInTable2(String udid, HTableInterface table, int token) throws ClassNotFoundException, SQLException {  //added by LJ
+    	byte[] rowKey = null;
+    	
+    	try {	
+        	rowKey = HBaseKeyWrap.constructKey(token, udid);
+        	long startTS = System.nanoTime();
+			Get get = new Get(rowKey);
+			Result rs = table.get(get);
+			long endTS = System.nanoTime();
+			logger.info("getOneRecordRT key routines takes "+ (endTS-startTS)+ " nanoseconds.");
+			return rs; 
+		} catch (IOException e) {
+			logger.error("HBase getOneRecord - Exception happend. TableName: " + Bytes.toString(rttable.getTableName()) + "; RowKey: " + rowKey);
+			e.printStackTrace();
+		}
+        return null;
+    }
+    
+    
+    /**
+     * Scan (or list) a table
+     */
+    public static ResultScanner getAllRecord (String tableName, int cacheSize ) {
+    	HTableInterface table = htpool.getTable(tableName);
+        try{
+             Scan s = new Scan();
+             s.setCaching(cacheSize);
+        
+             ResultScanner ss = table.getScanner(s);
+             return ss;
+        } catch (IOException e){
+        	logger.error("Hbase getAllRecord -- exceptino happened");
+            e.printStackTrace();
+        }
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        return null;
+    }
+    
+    /**
+     * Scan (or list) a table
+     */
+    public static ResultScanner scanRecord (String tableName, String startRow, String endRow) {
+    	HTableInterface table = htpool.getTable(tableName);
+        try{
+             Scan s = null;
+             if (startRow == null) {
+            	 return null;
+             } else if (endRow != null) {
+            	 s = new Scan(startRow.getBytes(), endRow.getBytes());
+             }
+             return table.getScanner(s);
+        } catch (IOException e){
+        	logger.error("Hbase scanRecord -- exceptino happened");
+            e.printStackTrace();
+        }
+        finally
+        {
+        	if(table != null)
+        	{
+        		try {
+					table.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        return null;
+    }
+ 
+    public static void main(String[] args) {
+        try {
+        	init();
+        	
+        	HTableInterface table1 = HBaseConn.getHPool().getTable("conversion_history_1month");  //("conversion_history"); //
+        	HTableInterface table2 = HBaseConn.getHPool().getTable("conversion_history_1week_I"); //("conversion_history");  //
+        	HTableInterface table3 = HBaseConn.getHPool().getTable("conversion_history_1week_II"); //("conversion_history");  //
+        	
+        	ArrayList<HTableInterface> tables = new ArrayList<HTableInterface>();
+        	tables.add(table1);
+        	tables.add(table2);
+        	tables.add(table3);
+        	
+        	int testnum = Integer.parseInt(args[0]);
+        	String udid = args[1]; //"001436292878"; //"000d00004d28";
+        	
+        	int token = getTokenForTableKey();
+        	
+        	long starttime = System.nanoTime();
+        	Result res1 = HBaseConn.getOneRecordInTable2(udid, table1, token); 
+        	long endtime = System.nanoTime();
+        	System.out.println("warmup table1 time="+(endtime-starttime));
+        	
+        	starttime = System.nanoTime();
+        	res1 = HBaseConn.getOneRecordInTable2(udid, table2, token);
+        	endtime = System.nanoTime();
+        	System.out.println("warmup table2 time="+(endtime-starttime));
+        	
+          	starttime = System.nanoTime();
+        	res1 = HBaseConn.getOneRecordInTable2(udid, table3, token);
+        	endtime = System.nanoTime();
+        	System.out.println("warmup table3 time="+(endtime-starttime));
+            
+        	double t1 = 0.0;
+        	double t2 = 0.0;
+        	
+        	Result res2 = null;
+        	
+        	int tocount = 0;
+        	int count = 0;
+        	int excesscount = 0;
+        	
+        	for(int i=0; i< testnum; i++)
+        	{	
+            	starttime = System.nanoTime();
+            	res2 = HBaseConn.getOneRecordInTableWithTimeout(udid, token, tables, 100);
+            	endtime = System.nanoTime();
+            	t2 += (double)(endtime-starttime);
+            	
+            	if(res2 != null)
+            	{
+            		int internalcount = 0;
+            		for(KeyValue kv : res2.raw()){		   
+        			ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
+        			ObjectInputStream o = new ObjectInputStream(b);
+        			System.out.println("new result in progress: "+ o.readObject().toString());
+        			internalcount++;
+            		}
+            		if(internalcount != 1)
+            			excesscount++;
+            		count++;
+            	}
+            	else
+            	{
+            		System.out.println("new result timeout in progress!");
+            		tocount++;
+            	}
+            	
+            	starttime = System.nanoTime();
+            	res1 = HBaseConn.getOneRecordInTable2(udid, table1, token);
+            	endtime = System.nanoTime();
+            	t1 += (double)(endtime-starttime);
+        	}
+        	
+        	for(KeyValue kv : res1.raw()){	
+        		ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
+    			ObjectInputStream o = new ObjectInputStream(b);
+    			System.out.println("old result: "+ o.readObject().toString());
+        	}
+        	
+        	if(res2 != null)
+        	{
+        		for(KeyValue kv : res2.raw()){		   
+        			ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
+        			ObjectInputStream o = new ObjectInputStream(b);
+        			System.out.println("new result: "+ o.readObject().toString());
+        		}
+        	}
+        	else
+        		System.out.println("we have a time out in the end!!!");
+
+        	System.out.println("time comparison: old="+t1/testnum+" new="+t2/testnum+" ontime count="+count+" timeout count="+tocount+" abnormal result count="+excesscount);
+        	
+        	/*HTableInterface table = HBaseConn.getHPool().getTable("conversion_history");
+        	    	 	
+        	long starttime = System.nanoTime();
+        	Result res1 = HBaseConn.getOneRecordInTable2("000d00004d28", table);
+        	long endtime = System.nanoTime();
+        	System.out.println("warmup one-day table time="+(endtime-starttime));
+        	
+        	for(KeyValue kv : res1.raw()){	
+        		ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
+    			ObjectInputStream o = new ObjectInputStream(b);
+    			System.out.println("one-day sampling result:"+ o.readObject().toString());
+        	}*/
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        	
+        HBaseConn.shutdown();
+        return;
+    }
+}
+
+
+

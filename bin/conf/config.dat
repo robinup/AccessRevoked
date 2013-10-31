@@ -1,0 +1,228 @@
+Package:
+  com.tapjoy.opt.config
+Class:
+ com.tapjoy.opt.config.OverallConfig
+
+  isProduction type=boolean value=true
+  productionS3 type=boolean value=false
+  MODEL_OVERRIDE type=String value=""
+  FEATURED_MODEL_OVERRIDE type=String value=""
+  VERTICA_CYCLE_DELAY type=int value=600
+  OPTSOA_PORT type=int value=8888
+  OPTSOA_HOME_DIR type=String value="/Users/ljiang/Projects/tapjoyopt-lj/optsoa_dev/tapjoyoptimization/opt_server/dist/../bin/"
+  DYN_CONF_DIR type=String value="conf"
+  MODEL_REG_FILE type=String value="modelconfig.dat"
+  ASSIGNER_REG_FILE type=String value="assignerconfig.dat"
+  PUBOPT_APPLIST_FILE type=String value="pub_app_id_50new"
+  MONITOR_PATH_DIR type=String value="/home/tjopt/GIT_opt/tapjoyoptimization/opt_server/watchdog_logs/"
+  healthCheck type=String value="/?command=offerwall&algorithm=324&source=offerwall&platform=iOS&device_type=iphone&udid=12345&offer_count=10&ip_addr=38.104.224.62"
+  databaseServer type=String value="backup"
+  Email.HOST type=String value="smtp.gmail.com"
+  Email.USER type=String value="opt_root@tapjoy.com"
+  Email.PASSWORD type=String value="<aymT2HZ"
+  Email.PORT type=String value="465"
+  Email.FROM type=String value="opt_root@tapjoy.com"
+  Email.TO type=String value="opt@tapjoy.com"
+  Email.STARTTLS type=String value="true"
+  Email.AUTH type=String value="true"
+  Email.DEBUG type=String value="true"
+  Email.SOCKET_FACTORY type=String value="javax.net.ssl.SSLSocketFactory"
+  Email.SUBJECT type=String value="Optimization Status Update"
+  Email.TEXT type=String value="This is a test message from my java application. Just ignore it"
+  DatabaseServer$verticaprod2.name type=String value="verticaprod2"
+  DatabaseServer$verticaprod2.hostIp type=String value="bi.tapjoy.com"
+  DatabaseServer$verticaprod2.databaseName type=String value="tapjoy"
+  DatabaseServer$verticaprod2.userName type=String value="dbadmin"
+  DatabaseServer$verticaprod2.passWord type=String value="TJ4ever!"
+  DatabaseServer$verticaprod2.port type=String value="5433"
+  DatabaseServer$verticaprod.name type=String value="verticaprod"
+  DatabaseServer$verticaprod.hostIp type=String value="vertica.tapjoy.com"
+  DatabaseServer$verticaprod.databaseName type=String value="tapjoy"
+  DatabaseServer$verticaprod.userName type=String value="dbadmin"
+  DatabaseServer$verticaprod.passWord type=String value="TJ4ever!"
+  DatabaseServer$verticaprod.port type=String value="5433"
+  DatabaseServer$localbackup.name type=String value="localbackup"
+  DatabaseServer$localbackup.hostIp type=String value="127.0.0.1"
+  DatabaseServer$localbackup.databaseName type=String value="tapjoy"
+  DatabaseServer$localbackup.userName type=String value="dbadmin"
+  DatabaseServer$localbackup.passWord type=String value="TJ4ever!"
+  DatabaseServer$localbackup.port type=String value="5433"
+  DatabaseServer$localmain.name type=String value="localmain"
+  DatabaseServer$localmain.hostIp type=String value="127.0.0.1"
+  DatabaseServer$localmain.databaseName type=String value="tapjoy"
+  DatabaseServer$localmain.userName type=String value="dbadmin"
+  DatabaseServer$localmain.passWord type=String value="TJ4ever!"
+  DatabaseServer$localmain.port type=String value="5433"
+  DatabaseServer$backup.name type=String value="backup"
+  DatabaseServer$backup.hostIp type=String value="50.19.61.148"
+  DatabaseServer$backup.databaseName type=String value="tapjoy"
+  DatabaseServer$backup.userName type=String value="dbadmin"
+  DatabaseServer$backup.passWord type=String value="TJ4ever!"
+  DatabaseServer$backup.port type=String value="5433"
+  DatabaseServer$main.name type=String value="main"
+  DatabaseServer$main.hostIp type=String value="10.94.101.41"
+  DatabaseServer$main.databaseName type=String value="tapjoy"
+  DatabaseServer$main.userName type=String value="dbadmin"
+  DatabaseServer$main.passWord type=String value="TJ4ever!"
+  DatabaseServer$main.port type=String value="5433"
+  OFFER.DEEP_LINK_OFFER type=String value="DeeplinkOffer"
+  Cache.AllOfferTTL type=int value=6000
+  SQL.MIN_ALL_OFFER_SIZE type=int value=500
+  SQL.SLEEP_IN_SECONDS type=int value=10
+  S3$Test.S3_BUCKET_NAME type=String value="tj-optimization-test"
+  S3$Test.S3_BUCKET_KEY type=String value="unittest/"
+  S3$Production.S3_BUCKET_NAME type=String value="tj-optimization"
+  S3$Production.S3_BUCKET_KEY type=String value=""
+  S3Cred.aws_access_key_id type=String value="AKIAJ46RRH6TIM5BJ44A"
+  S3Cred.aws_secret_access_key type=String value="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"
+
+Package:
+  com.tapjoy.opt.linear_regression.config
+Class:
+ com.tapjoy.opt.linear_regression.config.Configuration
+
+  S3LocalCopyDir type=String value="/tmp/LeiTest1"
+  algorithms type=String[] value=["324","330","350","999"]
+  Ranking.OPT_GLOBAL type=boolean value=true
+  Ranking.OPT_COUNTRY type=boolean value=true
+  Ranking.OPT_APP type=boolean value=false
+  Platform.OFFERWALL type=int value=0
+  Platform.TJM type=int value=1
+  OS.IOS type=String value="iOS"
+  OS.ANDROID type=String value="Android"
+  OS.activeOs type=String[] value=["iOS","Android"]
+
+Package:
+  com.tapjoy.opt.logistic_regression.config
+Class:
+ com.tapjoy.opt.logistic_regression.config.Configuration
+
+
+Package:
+  com.tapjoy.opt.model_assigner
+Class:
+ com.tapjoy.opt.model_assigner.AssignerManager
+
+  assignerName type=String value=""
+  featuredAssignerName type=String value=""
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.Configuration
+
+  LOAD type=boolean value=true
+  OUTPUT_AS_FILE type=boolean value=true
+  OUTPUT_TO_CACHE type=boolean value=true
+  CACHE_SERVE_SIZE type=int value=10
+  enableAppTargeting type=boolean value=false
+  enableETL type=boolean value=true
+  FROM_OPT_TO_TEST type=boolean value=false
+  RUN_BID_DISCOUNT type=boolean value=false
+  algorithms type=String[] value=["280","101"]
+  Ranking.ALGORITHM_101 type=String value="101"
+  Ranking.ALGORITHM_280 type=String value="280"
+  Ranking.REFRESH_OFFER_COUNT type=int value=6
+  Ranking.ENABLE_SHOW_RATE type=boolean value=false
+  Ranking.MIN_RANK_POSITION type=int value=25
+  Ranking.MIN_OFFER_SIZE type=int value=80
+  Ranking.MAX_RANK_INDEX type=int value=1500
+  Ranking.MIN_SHOW_RATE type=double value=0.1
+  Ranking.HARD_INSERT_POS type=int value=15
+  Ranking.DEFAULT_LEAST_SCORE type=double value=10000.0
+  Ranking.SIGMA_DISTANCE type=double value=1.0
+  Ranking.RANK_ADJUST_RATIO type=double value=0.25
+  Ranking.TAIL_THRESH type=double value=10.0
+  Ranking.LIST_SIZE type=int value=100
+  Ranking.OPT_GLOBAL type=boolean value=true
+  Ranking.OPT_COUNTRY type=boolean value=false
+  Ranking.OPT_APP type=boolean value=false
+  Ranking.OPT_GOW type=boolean value=true
+  Ranking.OPT_TJM type=boolean value=true
+  ShowRate.ETL_DELAY type=int value=-1800
+  Targeting$App.REACH type=double value=0.25
+  Targeting$App.MIN_INSTALLS type=int value=0
+  Targeting$App.SHOW_WEIGHT type=String value="1.00"
+  Targeting$App.DEFAULT_SHOW_WEIGHT type=String value="0.05"
+  Targeting$App.enableAppTarget type=boolean value=true
+  Targeting$App.ETL_LOOKBACK type=int value=2
+  Targeting$App.SUB_PATH type=String value="/app/"
+  Targeting$App.DASHBOARD_FILE_NAME type=String value="dashboard.json"
+  Targeting$App.PLATFORM_FILE_NAME type=String value="platform.json"
+  Targeting$App.REFRESH_APP_COUNT type=int value=6
+  Platform.OFFERWALL type=int value=0
+  Platform.TJM type=int value=1
+  OS.IOS type=String value="iOS"
+  OS.ANDROID type=String value="Android"
+  OS.activeOs type=String[] value=["iOS","Android"]
+  RankBoost.RANKBOOST_CODE type=String value="1"
+  RankBoost.RANKBOOST_THRESHOLD type=int value=1001
+  Etl.RUN_ETL type=boolean value=true
+  Etl.ETL_BUCKET type=String value="tj-vertica"
+  Etl.ETL_SUBFOLDER type=String value="etl_main"
+  Etl.TEST_ETL_LOOKBACK type=int value=90
+  Audition.AUD_BUCKET type=String value="tj-optimization-audition"
+  Audition.AUD_BUCKET_TEST type=String value="tj-optimization-test"
+  Audition.AUD_DIR type=String value=""
+  Audition.AUD_DIR_TEST type=String value="audition-unittest/"
+  Audition.LOAD_S3 type=boolean value=false
+  Audition.AUDITION_MERGE type=boolean value=false
+  Audition.PRED_TO_SCORE type=double value=0.5
+  Audition.PRED_TO_SCORE_BASE type=double value=5.0
+  Cache.NewOfferTTL type=int value=300
+  Cache.S3AuditionTTL type=int value=300
+  SQL.MIN_OPT_OFFER_SIZE type=int value=50
+  LOGGER_DEFINITION.OPERATIONS type=String value="operations"
+  Workspace.WorkSpace type=String value="workspace"
+  Workspace.TestWorkSpace type=String value="workspace"
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationApp
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationAudition
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationCountries
+
+  GLOBAL_LOOKBACK_DATE type=int value=14
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationHardPromotion
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationLookback
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationSegment
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationTargetApp
+
+
+Package:
+  com.tapjoy.opt.vertica_score.config
+Class:
+ com.tapjoy.opt.vertica_score.config.ConfigurationTJMCountries
+
+  GLOBAL_LOOKBACK_DATE type=int value=14
+

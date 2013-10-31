@@ -1,0 +1,5 @@
+com.tapjoy.opt.linear_regression:LinearRegression
+com.tapjoy.opt.featured_logit:FeaturedLogisticRegression
+com.tapjoy.opt.conversion_matrix:ConversionMatrix
+com.tapjoy.opt.publisher_opt:PublisherOptimization
+com.tapjoy.opt.segmentation:Segmentation

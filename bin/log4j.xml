@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<appender name="consoleAppender" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="debug" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[optimization] %d %p [%t] %c.%M(%L) | %m%n" />
+			<!-- <param name="ConversionPattern" value="%d %-5p [%c{1}] %m %n" /> -->
+		</layout>
+	</appender>
+
+	<!-- CONSOLE FILE SETUP -->
+	<appender name="CONSOLE_FILE" class="org.apache.log4j.RollingFileAppender">
+		<param name="Threshold" value="debug" />
+		<param name="File" value="workspace/logs/OptSOA.log" />
+        	<param name="MaxFileSize"    value="128MB"/>
+        	<param name="MaxBackupIndex" value="60"/>
+
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n" />
+		</layout>
+	</appender>
+
+	<appender name="CONSOLE" class="org.apache.log4j.AsyncAppender">
+		<appender-ref ref="CONSOLE_FILE" />
+	</appender>
+
+     <appender name="HBASE_FILE" class="org.apache.log4j.RollingFileAppender">
+                <param name="Threshold" value="debug" />
+                <param name="File" value="workspace/logs/OptSOAHBase.log" />
+        	<param name="MaxFileSize"    value="128MB"/>
+        	<param name="MaxBackupIndex" value="60"/>
+
+                <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%m%n" />
+                </layout>
+        </appender>
+
+  	<appender name="HBASE" class="org.apache.log4j.AsyncAppender">
+                <appender-ref ref="HBASE_FILE" />
+        </appender>
+
+    <!-- OPERATIONS FILE -->
+    <appender name="OPERATIONS_FILE" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="debug" />
+        <param name="File" value="workspace/logs/OptSOA_OP.log" />
+        <param name="MaxFileSize"    value="1MB"/>
+        <param name="MaxBackupIndex" value="10"/>
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[optimization] %d %p [%t] %c | %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="OPERATIONS_AL" class="org.apache.log4j.AsyncAppender">
+        <appender-ref ref="OPERATIONS_FILE" />
+    </appender>
+
+    <!-- VERTICA ENGINE -->
+    <appender name="VERTICA_ENGINE_FILE" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="debug" />
+        <param name="File" value="workspace/logs/OptVerticaScore.log" />
+        <param name="MaxFileSize"    value="1000MB"/>
+        <param name="MaxBackupIndex" value="10"/>
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[optimization] %d %p [%t] %c | %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="VERTICA_ENGINE" class="org.apache.log4j.AsyncAppender">
+        <appender-ref ref="VERTICA_ENGINE_FILE" />
+    </appender>
+
+    <!-- Loggers -->
+    <logger name="com.tapjoy.opt" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+     <logger name="com.tapjoy.opt.common.HBaseConn" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="HBASE" />
+    </logger>
+
+    <logger name="com.tapjoy.opt.vertica_score" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="VERTICA_ENGINE" />
+    </logger>
+
+    <logger name="com.tapjoy.opt.etl.VerticaLoaderTest" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="consoleAppender" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+	<logger name="operations" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="OPERATIONS_AL" />
+	</logger>
+
+	<logger name="com.tapjoy.opt.common.ListSQLExecutor" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="OPERATIONS_AL" />
+	</logger>
+
+	<logger name="com.tapjoy.opt.common.GenericQuery" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="OPERATIONS_AL" />
+	</logger>
+
+	<root>
+		<level value="info" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</log4j:configuration>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- build.xml, for Ant to compile and run cs435F08 example, Wainer -->
+<project basedir="." default="compile">
+  <property name="build.dir" value="build" />
+  <property name="src.dir" value="src" />
+  <property name="lib.dir" value="lib" />
+  <property name="dist.dir" value="dist" />
+
+  <path id="compile.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="init" description="Creates temporary directories">
+    <mkdir dir="${build.dir}" />
+    <mkdir dir="${build.dir}/classes" />
+    <mkdir dir="${dist.dir}" />
+  </target>
+
+  <target name="compile" depends="init">
+    <javac debug="false" deprecation="false" destdir="${build.dir}/classes" srcdir="${src.dir}" verbose="false">
+      <classpath refid="compile.classpath" />
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile" description="Create the jar file">
+      <jar jarfile="${dist.dir}/TapjoyOptService.jar" basedir="${build.dir}/classes">
+          <fileset dir="${build.dir}/classes" />
+          <fileset dir="${src.dir}" includes="**/*.java" />
+      </jar>
+  </target>
+
+  <target name="clean" depends="init" description="Removes temporary directories">
+    <delete dir="${build.dir}" />
+    <delete dir="${dist.dir}" failonerror="false" />
+</target>
+
+
+
+  <!-- 
+  <target name="runOpt" depends="compile" description="Run the optimization package locally">
+    <java/>
+  </target>
+  -->
+</project>
+

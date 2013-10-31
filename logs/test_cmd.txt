@@ -1,0 +1,1 @@
+401: curl "http://localhost:8888/?command=offerwall&algorithm=401&udid=001337799051623&source=offerwall&primary_country=US&platform=Android&device_type=android&offer_count=30&hide_rewarded_app_installs=true&app_id=4a88427f-9c0c-497c-a68b-e1a10992cfcc&currency_id=5493c5ee-20ac-4422-a88d-6585b0da8a90&test=true&ip_addr=72.201.255.167&currency_exchange_rate=20&locale=en/"

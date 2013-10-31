@@ -1,0 +1,16 @@
+package com.tapjoy.opt.sql;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import com.tapjoy.opt.common.GenericQuery;
+
+public class Token {
+	private static String TOKEN_SQL = "select max(token) as token " + "from optsoa_tokens";
+	
+	public static String getToken(Connection conn)
+			throws SQLException {
+
+		return new GenericQuery().runQueryToToken(conn, TOKEN_SQL);
+	}
+}

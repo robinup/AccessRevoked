@@ -1,0 +1,204 @@
+package com.tapjoy.opt;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import net.spy.memcached.MemcachedClient;
+
+import org.apache.log4j.Logger;
+
+import com.tapjoy.opt.common.OfferRowUtil;
+import com.tapjoy.opt.common.Row;
+import com.tapjoy.opt.common.VerticaConn;
+import com.tapjoy.opt.object_cache.OfferCache;
+import com.tapjoy.opt.config.OverallConfig;
+import com.tapjoy.opt.util.MClient;
+
+/**
+ * Responsible for maintaining all the global data resources
+ * that are shared by Offerlist engines, e.g. offer map
+ *  
+ * @author lding
+ *
+ */
+
+public class GlobalDataManager {
+	
+	private static Logger logger = Logger.getLogger(GlobalDataManager.class);
+	
+	// If needed to sync allOffer map via MC
+	private String key_base = "MCAllOfferMap";
+	
+	public static boolean status = false;
+	
+	//public static Connection conn = null;   //added by LJ 08-16
+	
+	/**
+	 * Dump the all offer map to the MC such that other servers can share instead of having to request DB
+	 * 
+	 * @param mcClt
+	 * @return
+	 * @throws SQLException 
+	 */
+	@SuppressWarnings("unused")
+	private boolean exportAllOfferMapToMC(MemcachedClient mcClt) {  
+		Map <String, Row> allOfferMap = OfferCache.getInstance().get(); 
+		Iterator<String> it = allOfferMap.keySet().iterator();
+		Row sampleRow = null;
+		while (it.hasNext()) {
+			sampleRow = allOfferMap.get(it.next());
+			if (sampleRow != null) {
+				break;
+			}
+		}
+		
+		
+		if (sampleRow == null) {
+			return false;
+		}
+		
+		HashMap<String, Integer> columnMap = new HashMap<String, Integer>(sampleRow.getColumnMap());
+		if (! MClient.executeCmd(mcClt, "set", key_base + ":AOMcolMap", 7200, columnMap, 100)){
+			return false;
+		}
+		//System.out.println("LeiTest - exportDataResource 1");
+		HashMap<String, Integer> derivedColumnMap = new HashMap<String, Integer>(sampleRow.getDerivedColumnMap());
+		if (! MClient.executeCmd(mcClt, "set", key_base + ":AOMDrdColMap", 7200, derivedColumnMap, 100)){
+			return false;
+		}
+		//System.out.println("LeiTest - exportDataResource 2");
+	    HashMap<Integer, String> indexMap = new  HashMap<Integer, String> (sampleRow.getIndexMap());
+	    if (! MClient.executeCmd(mcClt, "set", key_base + ":AOMIdxMap", 7200, indexMap, 100)){
+			return false;
+		}
+	    logger.info("ExportDataResource - written OfferRow meta");
+	    
+	    //System.out.println("LeiTest - exportDataResource 3");
+		HashMap <String, String []> allOfferMapToMc = OfferRowUtil.getMCExtraction(allOfferMap);
+		
+		/*
+		Set<Entry<String, String []>> entries = allOfferMapToMc.entrySet();
+		int i = 0;
+		for (Entry<String, String []> ent : entries) {
+			System.out.println("LeiTest - key: " + ent.getKey() + "; val: " + StringUtil.joinArray(ent.getValue()));
+			break;
+		}
+		*/
+		
+		if (! MClient.executeCmd(mcClt, "set", key_base + ":AOMMap", 7200, allOfferMapToMc, 1000)){
+			return false;
+		}
+		
+		logger.info("ExportDataResource - written AllOfferMap. The size: " + allOfferMapToMc.size());
+		
+		return true;
+	}
+	
+	/**
+	 * Load the all offer map from MC instead of having to request DB
+	 * 
+	 * @param mcClt
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "unused" })
+	private boolean importAllOfferMap (MemcachedClient mcClt) {
+		HashMap<String, Integer> columnMap = (HashMap<String, Integer>)(mcClt.get(key_base + ":AOMcolMap"));
+		if (columnMap == null) {
+			return false;
+		}
+		
+		HashMap<String, Integer> derivedColumnMap = (HashMap<String, Integer>)(mcClt.get(key_base + ":AOMDrdColMap"));
+		if (derivedColumnMap == null) {
+			return false;
+		}
+ 		
+		HashMap<Integer, String> indexMap = (HashMap<Integer, String>)(mcClt.get(key_base + ":AOMIdxMap"));
+		if (indexMap == null) {
+			return false;
+		}
+		
+		HashMap <String, String []> allOfferMapToMc = (HashMap <String, String []>)(mcClt.get(key_base + ":AOMMap"));
+		if (allOfferMapToMc == null) {
+			return false;
+		}
+		
+		Map<String, Row> allOfferMap = OfferRowUtil.restoreFromMcExtraction(allOfferMapToMc, columnMap, derivedColumnMap, indexMap);
+		OfferCache.getInstance().set(allOfferMap);
+		
+		logger.info("ImportDataResource - restored AllOfferMap");
+		
+		return true;
+	}
+	
+	
+	/**
+	 * The main working function
+	 * @return
+	 */
+	private boolean loadData() {
+		// Reset the all offer map
+		Connection conn = null;  //commented by LJ 08-16
+		Connection conn2 = null; //only backup server of optimization.offers_raw has featured ads offers
+		try {
+			conn = VerticaConn.getConnectionNew("backup", "optimization");
+			conn2 = VerticaConn.getConnectionNew("backup", "optimization");
+			OfferCache.getInstance().resetMap(conn, false);
+			OfferCache.getInstance().resetMap(conn2, true);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}  catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}  finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+				if(conn2 != null)
+					conn2.close();
+			} catch (SQLException e) {
+				logger.error("run failed!!!", e);
+			}
+		}
+		
+		status = true;
+		
+		return true;
+	}
+
+	/**
+	 * The data update thread
+	 * 
+	 */
+	private class UpdateCronJob implements Runnable {
+
+		@Override
+		public void run() {
+			logger.info("Reloading Global Resources");
+
+			loadData();
+
+			
+		}
+	}
+
+	/**
+	 * Setup the updater cronjob
+	 */
+	protected void setupCronJob() {
+		//logger.info("LeiTest -- CYCLE_DELAY: " + CYCLE_DELAY + "; " + this.getClass().getCanonicalName());
+		
+		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+		scheduler.scheduleWithFixedDelay(new UpdateCronJob(), 0, OverallConfig.RDBS_CONN_CYCLE, SECONDS);
+	}
+	
+}

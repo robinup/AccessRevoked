@@ -1,0 +1,121 @@
+package com.tapjoy.opt.conversion_matrix;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.apache.log4j.Logger;
+
+import com.tapjoy.opt.ModelController;
+import com.tapjoy.opt.cache.OfferListCache;
+
+import com.tapjoy.opt.common.HBaseConn;
+import com.tapjoy.opt.conversion_matrix.config.Configuration;
+import com.tapjoy.opt.object_cache.TokenCache;
+import com.tapjoy.opt.offerlist.OfferList;
+import com.tapjoy.opt.resource.ResourceManager;
+
+
+public class ConversionMatrixResourceManager extends ResourceManager {
+	// LeiTest - hack to override the reload interval
+	
+	private static Logger logger = Logger.getLogger(ResourceManager.class);
+	
+	public ConversionMatrixResourceManager() {
+		super();
+		RELOAD_DELAY = Configuration.RELOAD_DELAY;
+		setupCronJob();
+		setupModelCronJob();
+	}
+
+	@Override
+	protected void initialize() {
+		// TODO Auto-generated method stub
+		container = ConversionMatrixResourceDataContainer.getInstance();
+		updateMgr = new ConversionMatrixResourceUpdateManager(container);
+		computeEngine = new ConversionMatrixOfferListComputeEngine(container);
+		
+		System.out.println("LeiTest -- ConvMatrix initialize");
+		backupRsrcMgr =  ModelController.getRegModel(ModelController.getAlgoIndex(Configuration.BACKUP_ALGO_ID));
+		System.out.println("LeiTest -- ConvMatrix initialize - " + (backupRsrcMgr == null ? "no backup resourcemanager" : "there is backup resourcemanager"));
+	}
+	
+
+	@Override
+	public String getOfferListKey(String defaultKey, HashMap<String, String> specs) {
+		// Replace the algo part with own algo tag; attach the udid to it
+		int pos = defaultKey.indexOf('.');
+		return Configuration.ALGO_ID + defaultKey.substring(pos) + "." + specs.get("udid");
+
+	}
+	
+	
+	// Override the default version
+	protected OfferList retrieveOrCreateOfferList(HashMap <String, String> specs) {
+		// get the static key
+		System.out.println("LeiTest -- retrieveOrCreateOfferList - backupRsrcMgr - " + (backupRsrcMgr != null ? "not null" : "null"));
+		String backupKey = backupRsrcMgr.getOfferListKey(specs, true);
+		
+		//String backupKey = OptimizationService.getServiceEngine2().getOfferListKey(specs, true);
+		System.out.println("LeiTest - retrieveOrCreateOfferList - backupKey: " + backupKey);
+		if (backupKey == null ) {
+			logger.error("Requests mapped to empty key");
+			System.out.println("LeiTest - retrieveOrCreateOfferList - 11111");
+			return null;
+		}
+		
+		// Check if the static version is in cache
+		OfferList staticOl = OfferListCache.getInstance().retrieve(backupKey, true);
+		if (staticOl == null) {
+			logger.error("680-null static list error");
+			System.out.println("LeiTest - retrieveOrCreateOfferList - static list null error");
+			return null;
+		}
+		
+		// get the customized key
+		String key = getOfferListKey(backupKey, specs);
+		
+		// check if the customized offer list is in cache. if so. serve it
+		OfferList ol = OfferListCache.getInstance().retrieve(key, false);
+		if (ol != null) {
+			specs.put("algorithm", Configuration.BACKUP_ALGO_ID);
+			return ol;
+		}
+					
+		return this.computeEngine.computeForDevice(key, specs, staticOl);	
+	}
+	
+
+
+	@Override
+	public String getOfferListKey(HashMap<String, String> specs,  boolean asStaticEngine) {
+		return null;
+	}
+	
+	//model-specific cronjob (model-specific)
+	public class UpdateModelCronJob implements Runnable {
+
+		@Override
+		public void run() {
+			logger.info("Reloading Resource -- ConversionMatrix");
+			int tmptoken = TokenCache.getToken(0);
+			if(tmptoken >= 0)
+				((ConversionMatrixResourceDataContainer)container).rttoken = tmptoken;
+		}
+	}
+
+	/**
+	 * Setup the updater cronjob (model-specific)
+	 */
+	protected void setupModelCronJob() {
+		//System.out.println("LeiTest -- RELOAD_DELAY: " + RELOAD_DELAY + "; " + this.getClass().getCanonicalName());
+		ScheduledExecutorService scheduler = Executors
+				.newSingleThreadScheduledExecutor();
+
+		scheduler.scheduleWithFixedDelay(new UpdateModelCronJob(), 0, Configuration.MODEL_RELOAD_DELAY, SECONDS);
+	}
+
+}

@@ -1,0 +1,354 @@
+package com.tapjoy.opt.server;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.SocketAddress;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import org.jboss.netty.util.CharsetUtil;
+
+import com.maxmind.geoip.LookupService;
+import com.tapjoy.opt.OptimizationService;
+import com.tapjoy.opt.ModelController;
+import com.tapjoy.opt.common.GeoIpService;
+import com.tapjoy.opt.config.OverallConfig;
+import com.tapjoy.opt.model_assigner.ModelAssigner;
+
+public class HttpOptRequestHandler extends SimpleChannelUpstreamHandler {
+    private HttpRequest request;
+    private StringBuilder buf = new StringBuilder();
+    
+	private static Logger logger = Logger.getLogger(HttpOptRequestHandler.class);
+	
+	private static long log_count = 0;
+	
+	
+	// parse the ip address
+	private void processIP(HashMap <String, String> specs){
+		if (specs == null) {
+			return;
+		}
+		
+		if (specs.get("server_to_server") != null) {
+			return;
+		}
+		
+		String ip = specs.get("ip_addr");
+		if (ip == null) {
+			return;
+		}
+		
+		LookupService cl = GeoIpService.getGeoIpService();
+		if (cl == null) {
+			return;
+		}
+		
+		com.maxmind.geoip.Location loc = cl.getLocation(ip); 
+		if (loc == null) {
+			return;
+		}
+				
+		specs.put("primaryCountry", loc.countryCode);
+		specs.put("region", loc.region);
+		specs.put("city", loc.city);
+		specs.put("dma_code", loc.dma_code + "");
+		specs.put("lat", loc.latitude + "");
+		specs.put("long", loc.longitude + "");
+		specs.put("postal_code", loc.postalCode);
+		specs.put("area_code", loc.area_code + "");
+	}
+	
+	// All prepprocessing logic goes here
+	// Allow overwrite
+	private void preprocessRequest(HashMap <String, String> specs){
+		if (specs.get("country_code") != null) {
+			specs.put("primaryCountry", specs.get("country_code"));
+			specs.remove("country_code");
+		}
+				
+		if (specs.get("carrier_country_code") != null){
+			specs.put("primaryCountry", specs.get("carrier_country_code"));
+			specs.remove("carrier_country_code");
+		}
+		
+	}
+
+	
+	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+			long sTS = new Date().getTime();
+			buf.setLength(0);
+			String logpath = "";
+		
+			HttpRequest request = this.request = (HttpRequest) e.getMessage();
+
+			if (HttpHeaders.is100ContinueExpected(request)) {
+				logger.warn("request is is100ContinueExpected");
+				send100Continue(e);
+			}
+
+			String reqStr = request.getUri();
+			
+			// Deny empty requests
+			if (reqStr == null || reqStr.length() < 5){		
+				logger.info("Ind="+log_count+" bad request!!!\n");
+				log_count++;
+				    
+				if(log_count >= OverallConfig.LOG_COUNT_THRES)
+				{
+				    	log_count = 0;
+				}
+				writeResponse(e, HttpResponseStatus.BAD_REQUEST, sTS, logpath, false, "");
+				return;
+			}
+			
+			
+			// Substitute the health check with a valid check request
+			if ("/healthz".equals(reqStr) || "/healthz/".equals(reqStr) || "/health".equals(reqStr) || "/health/".equals(reqStr)) {
+				reqStr = OverallConfig.healthCheck;
+			}
+			
+			
+			// Deny all other requests 404
+			//if it is a web crawler with "robots.txt", we serve it with 200 but let it know that we allow you to do nothing. 
+			if (! "/?".equals(reqStr.substring(0, 2))) {	
+				if(!reqStr.endsWith("robots.txt"))
+				{	
+					logger.info("Unknown bad request!!!");
+					writeResponse(e, HttpResponseStatus.NOT_FOUND, sTS, logpath, false, "");
+				}
+				else
+				{
+					SocketAddress remoteAddress = ctx.getChannel().getRemoteAddress();
+					logger.info("Bad request from web crawler with an IP "+remoteAddress.toString());
+					buf.append("User-agent: *\nDisallow: /\n");
+					writeResponse(e, HttpResponseStatus.OK, sTS, logpath, true, "");
+				}
+				return;
+			}
+			
+			logger.debug("REQUEST_URI: " + reqStr + "\r\n\r\n");
+			
+			// Parse the requests
+			QueryStringDecoder queryStringDecoder = new QueryStringDecoder(reqStr);
+			Map<String, List<String>> params = queryStringDecoder.getParameters();
+			HashMap<String, String> specs = new HashMap<String, String>();
+			if (!params.isEmpty()) {
+				for (Entry<String, List<String>> p: params.entrySet()) {
+					String key = p.getKey();
+					List<String> vals = p.getValue();
+					if(vals.size() == 1) {
+						specs.put(key, vals.get(0));
+						//logger.debug("PARAM: " + key + " = " + vals.get(0) + "\r\n");
+					}
+				}
+			}
+			
+			//added for test LJ 09/17
+			if(specs.containsKey("monitor") && specs.containsKey("logname") && specs.get("monitor").equalsIgnoreCase("true"))  
+			{
+				//write a log file with processing time as denoted by url 
+				logpath += OverallConfig.MONITOR_PATH_DIR+specs.get("logname")+".log";
+			}			
+
+			processIP(specs);
+		    preprocessRequest(specs);
+		    
+		    String algo = specs.get("algorithm");
+		    String cmd = specs.get("command");
+		    
+		    // High level bad requests
+		    if (algo == null || cmd == null) {
+		    	buf.append("Invalid Request. ErrCode 4.1\n"); 	
+		    	logger.info("Ind="+log_count+" high-level bad request (no algo / no command)\n");
+				log_count++;
+				    
+				if(log_count >= OverallConfig.LOG_COUNT_THRES)
+				{
+				    	log_count = 0;
+				}
+				writeResponse(e, HttpResponseStatus.BAD_REQUEST, sTS, logpath, false, "");
+		    	return ;
+		    }
+		    
+		    // Model Controller can over ride it via OverAllConfig.MODEL_OVERRIDE, then Model Assigner
+		    if(! OverallConfig.MODEL_OVERRIDE.isEmpty() && (!specs.containsKey("monitor") || specs.get("monitor").equalsIgnoreCase("false")))
+		    {
+		    	 algo = OverallConfig.MODEL_OVERRIDE;
+		    	 logger.warn("Algo overridden to"+algo+"\n");
+		    	 specs.put("algorithm", algo);
+		    }
+		    
+		    
+		    /*else  //commented for Sep 25's version for integration -- LJ
+		    {
+		    	String algoassgn = ModelAssigner.assign(specs);
+		    	if(!algoassgn.isEmpty())
+		    		specs.put("algorithm", algoassgn); 
+		    }*/
+		    
+		    log_count++;
+		    if(log_count >= OverallConfig.LOG_COUNT_THRES)
+		    {
+		    	log_count = 0;
+		    }
+		    
+		    int algoind = 0;
+		    
+		    if(algo.equals("330"))
+		    	algoind = ModelController.getAlgoIndex("324");
+		    else if((algo.equals("999")  || algo.equals("350")) && !specs.get("source").equals("tj_games"))
+		    {
+		    	algoind = ModelController.getAlgoIndex("680");
+		    	algo = "680";
+		    	specs.put("algorithm", algo);
+		    }
+		    else
+		    	algoind = ModelController.getAlgoIndex(algo);
+		    
+		    if (algoind >= 0) {
+		    	buf.append(ModelController.getRegModel(algoind).serveRequest(cmd, specs));
+		     } 
+		    else {
+		    	buf.append("Invalid Request. ErrCode 4.2.1\n");
+		    	writeResponse(e, HttpResponseStatus.UNPROCESSABLE_ENTITY, sTS, logpath, false, "");
+		    	return ;
+		    }
+		    
+		    // Error Happened - 500
+		    if (buf.length() == 0) {
+		    	buf.append("Invalid Request. ErrCode 5.1\n");
+		    	writeResponse(e, HttpResponseStatus.INTERNAL_SERVER_ERROR, sTS, logpath, false, "");
+		    	return ;
+		    }
+		    		    
+		    // Invalid Request - 204/422
+		    if ("Invalid Request.".equals(buf.substring(0, 16))) {
+		    	if(OptimizationService.platform_whitelist.contains(specs.get("platform").toLowerCase()) || OptimizationService.platform_whitelist.contains(specs.get("device_type").toLowerCase()))
+		    	{
+		    		buf.setLength(0);
+		    		buf.append("{\n");
+		    		buf.append("\"key\":\"0.0.Windows...windows.windows_phone_secure_empty_return\",\n");
+		    	    buf.append("\"enabled\":\"true\",\n");
+		    	    buf.append("\"offers\":\n");
+		    	    buf.append("[\n");
+		    	    buf.append("]\n");
+		    	    buf.append("}\n");
+		    		writeResponse(e, HttpResponseStatus.OK, sTS, logpath, false, "0"); //a work-around for windows phone --serve with empty offer list Sep 26
+		    	}
+		    	else
+		    		writeResponse(e, HttpResponseStatus.UNPROCESSABLE_ENTITY, sTS, logpath, false, "");  //changed from 400 BAD_REQUEST
+		    	//trigger failover proc for empty return --- LJ
+		    	return ;
+		    }
+		    
+		    //need to handle more error codes as defined in protocol - LJ 09/17   09/24 solved
+		    
+		    // Good - 200
+			writeResponse(e, HttpResponseStatus.OK, sTS, logpath, false, algo);
+	}
+	
+	// When algo is not valid, return 
+	private void appendEmptyResponse() {
+		
+	}
+
+	private void writeResponse(MessageEvent e, HttpResponseStatus status, long startTS,  String logpath, boolean robotflag, String algoid) {
+		
+		// Decide whether to close the connection or not.
+		boolean keepAlive = HttpHeaders.isKeepAlive(request);
+
+		// Build the response object.
+		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
+		response.setContent(ChannelBuffers.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
+		response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
+
+		if (keepAlive) {
+			// Add 'Content-Length' header only for a keep-alive connection.
+			response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, response.getContent().readableBytes());
+			// Add keep alive header as per:
+			// - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+			response.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+		}
+
+		// Write the response.
+		ChannelFuture future = e.getChannel().write(response);
+		
+		long endTS = new Date().getTime();
+		
+		if(logpath.length() == 0 && status.equals(HttpResponseStatus.OK))
+		{
+			if(!robotflag)
+				logger.info("Ind="+ log_count+" Regular request served. algo="+algoid+" time=" + (endTS - startTS));
+			else
+				logger.info("Crawler request served. time=" + (endTS - startTS));
+		}
+		else if(logpath.length() == 0 && !status.equals(HttpResponseStatus.NOT_FOUND))
+			 logger.info("Ind="+ log_count+" Regular request unsuccessful. ErrorCode="+status.toString()+" time=" + (endTS - startTS));
+		else
+		{
+			//open a logfile for writing LJ
+			File file = new File(logpath);
+			if(file.exists()) //each launch of OptSOA, we have a new config file
+			{
+				file.delete();
+			}
+
+			try {
+				file.createNewFile();
+				FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);	
+				bw.write(buf.toString());
+				bw.write("time="+(endTS-startTS)+"\n");
+				bw.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				logger.warn("Ind="+ log_count+" log lost for monitor request "+ logpath);
+				e1.printStackTrace();
+			}	
+			logger.info("Ind="+ log_count+" Monitor request served. algo="+algoid+" time=" + (endTS - startTS));
+		}
+
+		// Close the non-keep-alive connection after the write operation is done.
+		if (!keepAlive) {
+			future.addListener(ChannelFutureListener.CLOSE);
+		}
+
+	}
+
+	private static void send100Continue(MessageEvent e) {
+		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
+		e.getChannel().write(response);
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+			throws Exception {
+		e.getCause().printStackTrace();
+		e.getChannel().close();
+	}
+
+}

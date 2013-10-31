@@ -1,0 +1,96 @@
+drop table opt_test.actions cascade;
+
+CREATE TABLE opt_test.actions (
+    udid VARCHAR(255),
+    publisher_user_id VARCHAR(255),
+    currency_id VARCHAR(255),
+    country VARCHAR(255),
+    viewed_at timestamp,
+    time timestamp,
+    publisher_app_id VARCHAR(255),
+    advertiser_app_id VARCHAR(255),
+    offer_id VARCHAR(255),
+    path VARCHAR(255),
+    source VARCHAR(255),
+    type VARCHAR(255),
+    exp VARCHAR(255),
+    currency_reward int8,
+    advertiser_amount int8,
+    publisher_amount int8,
+    displayer_amount int8,
+    tapjoy_amount int8,
+    day DATE,
+    etl_day VARCHAR(16) NOT NULL,
+    mac_address VARCHAR(255),
+    open_udid VARCHAR(255),
+    click_key VARCHAR(255),
+    library_version VARCHAR(255),
+    offerwall_rank int8,
+    device_type VARCHAR(255),
+    device_type_canon VARCHAR(255),
+    platform VARCHAR(255),
+    store_name VARCHAR(255),
+    cached_offer_list_id VARCHAR(255),
+    cached_offer_list_type VARCHAR(255),
+    auditioning VARCHAR(10)
+);
+
+drop table if exists opt_test.offerwall_actions cascade;
+
+CREATE TABLE opt_test.offerwall_actions (
+    udid VARCHAR(255),
+    currency_id VARCHAR(255),
+    country VARCHAR(255),
+    viewed_at timestamp,
+    converted_at timestamp,
+    offer_id VARCHAR(255),
+    source VARCHAR(255),
+    type VARCHAR(255),
+    currency_reward int8,
+    advertiser_amount int8,
+    publisher_amount int8,
+    displayer_amount int8,
+    tapjoy_amount int8,
+    offerwall_rank int8,
+    rank_score float8,
+    day DATE NOT NULL,
+    device_type VARCHAR(32),
+    os VARCHAR(32)
+) partition by day;
+
+drop table opt_test.offerwall_views cascade;
+
+CREATE TABLE opt_test.offerwall_views (
+    udid VARCHAR(255),
+    publisher_user_id VARCHAR(255),
+    currency_id VARCHAR(255),
+    country VARCHAR(255),
+    app_version VARCHAR(255),
+    time timestamp,
+    app_id VARCHAR(255),
+    offer_id VARCHAR(255),
+    device_type VARCHAR(255),
+    geoip_country VARCHAR(255),
+    path VARCHAR(255),
+    user_agent VARCHAR(255),
+    library_version VARCHAR(255),
+    ip_address VARCHAR(255),
+    source VARCHAR(255),
+    exp VARCHAR(255),
+    offerwall_start_index int8,
+    offerwall_max_items int8,
+    offerwall_rank int8,
+    offerwall_rank_score float8,
+    day DATE,
+    etl_day VARCHAR(16) NOT NULL,
+    device_type_canon VARCHAR(32),
+    platform VARCHAR(32),
+    mac_address VARCHAR(255),
+    open_udid VARCHAR(255),
+    store_name VARCHAR(255),
+    cached_offer_list_id VARCHAR(255),
+    cached_offer_list_type VARCHAR(255),
+    auditioning VARCHAR(10)
+);
+
+

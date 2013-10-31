@@ -1,0 +1,5 @@
+package com.tapjoy.opt.object_cache;
+
+public class TokenCache {
+
+}
