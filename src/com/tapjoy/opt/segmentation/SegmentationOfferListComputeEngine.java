@@ -21,6 +21,7 @@ import com.tapjoy.opt.offerlist.OfferList;
 import com.tapjoy.opt.offerlist.OfferListWithref;
 import com.tapjoy.opt.resource.OfferListComputeEngine;
 import com.tapjoy.opt.resource.ResourceDataContainer;
+import com.tapjoy.opt.segmentation.config.Configuration;
 
 public class SegmentationOfferListComputeEngine extends OfferListComputeEngine {
 
@@ -80,7 +81,8 @@ public class SegmentationOfferListComputeEngine extends OfferListComputeEngine {
         // of this (seg,offer_id) on S3
         while (iter.hasNext()) {
             CompoundRow of = new CompoundRow(iter.next());
-            //System.out.println("Segmentation: bid="+of.getBid()); //just a test
+            // System.out.println("Segmentation: bid="+of.getBid()); //just a
+            // test
             allOfferMap.put(of.id, of);
             Iterator<Entry<String, Float>> it = segProb.entrySet().iterator();
             float newscore = 0;
@@ -90,14 +92,17 @@ public class SegmentationOfferListComputeEngine extends OfferListComputeEngine {
                 if (seg_cvr.containsKey((String) pairs.getKey() + "#" + of.id)) {
                     // prob * cvr * bid(wait for lei add this field)
                     newscore += ((Float) pairs.getValue())
-                            * seg_cvr.get(pairs.getKey() + "#" + of.id)*of.getBid();
+                            * seg_cvr.get(pairs.getKey() + "#" + of.id)
+                            * of.getBid();
 
                     offerset.add(of.id);
                 }
             }
             // if newscore has been updated(we have estimation of cvr)
             if (newscore > 0) {
-                of.resv = newscore;   //don't overwrite the original score! that will affect the display of other algos. use resv- LJ 10/17
+                of.resv = newscore; // don't overwrite the original score! that
+                                    // will affect the display of other algos.
+                                    // use resv- LJ 10/17
                 updateOffers.add(of);
             }
         }
@@ -133,20 +138,21 @@ public class SegmentationOfferListComputeEngine extends OfferListComputeEngine {
             return null;
         }
 
-        long startTS = System.nanoTime();
+        Result res = HBaseConn.getOneRecordInTableWithTimeout(udid,
+                ((SegmentationResourceDataContainer) dataContainer).rttoken,
+                ((SegmentationResourceDataContainer) dataContainer).auxtables,
+                Configuration.HBASE_TIMEOUT_THRES,
+                Configuration.HBASE_TRAFFIC_TIME); // real-time query
+                                                   // with pre-created
+                                                   // table object
 
-        Result res = HBaseConn.getOneRecordInTable(udid,
-                ((SegmentationResourceDataContainer) dataContainer).rttable); // real-time
-        // query
-        // with
-        // user-big-table
-        // table
-        // object
-        long endTS = System.nanoTime();
-
-        logger.info("Finished an HBase query. Time used: " + (endTS - startTS)
-                + " nanoseconds");
         if (res == null) {
+            logger.info("udid " + udid + " HBase returns null");
+            System.out.println("udid " + udid + " HBase returns null");
+            return null;
+        } else if (res.isEmpty()) {
+            logger.info("udid " + udid + " HBase returns empty");
+            System.out.println("udid " + udid + " HBase returns empty");
             return null;
         }
         HashMap<String, Float> segScores = new HashMap<String, Float>();

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -12,6 +13,7 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.log4j.Logger;
 
 import com.tapjoy.opt.common.HBaseConn;
+import com.tapjoy.opt.conversion_matrix.ConversionMatrixResourceDataContainer;
 import com.tapjoy.opt.resource.ResourceDataContainer;
 import com.tapjoy.opt.resource.ResourceUpdateManager;
 import com.tapjoy.opt.segmentation.config.Configuration;
@@ -60,11 +62,15 @@ public class SegmentationResourceUpdateManager extends ResourceUpdateManager {
             e.printStackTrace();
         }
 
-        HTableInterface localtable = ((SegmentationResourceDataContainer) dataContainer).rttable;
-        if (localtable == null) {
-            ((SegmentationResourceDataContainer) dataContainer).rttable = HBaseConn
-                    .initRTTable(Configuration.RT_TABLE_NAME); // read user big
-                                                               // table
+        ((SegmentationResourceDataContainer) dataContainer).rttable = HBaseConn
+                .initRTTable(Configuration.RT_TABLE_NAME);
+        ((SegmentationResourceDataContainer) dataContainer).auxtables = new ArrayList<HTableInterface>();
+        ((SegmentationResourceDataContainer) dataContainer).auxtables
+                .add(((SegmentationResourceDataContainer) dataContainer).rttable);
+
+        for (String tablestr : Configuration.AUX_TABLE_NAMES) {
+            ((ConversionMatrixResourceDataContainer) dataContainer).auxtables
+                    .add(HBaseConn.initTable(tablestr));
         }
         logger.info("SegmentationResourceUpdateManager :: reloadDataResource Done");
     }
