@@ -1,5 +1,6 @@
 package com.tapjoy.opt.segmentation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.hadoop.hbase.client.HTableInterface;
@@ -13,6 +14,12 @@ public class SegmentationResourceDataContainer extends ResourceDataContainer {
     public HashMap<String, Float> seg_score = null;
 
     public HTableInterface rttable = null;
+
+    public String htabletoken = null;
+
+    public ArrayList<HTableInterface> auxtables = null;
+
+    public int rttoken = 0;
 
     private SegmentationResourceDataContainer() {
         this.identity = "seg_score";
