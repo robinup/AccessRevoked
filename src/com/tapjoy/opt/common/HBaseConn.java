@@ -36,8 +36,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
-import com.tapjoy.opt.object_cache.TokenCache;
 import com.tapjoy.opt.sql.Token;
+import com.tapjoy.opt.object_cache.TokenCache;
 
 
 //revised by LJ 10-29
@@ -305,7 +305,7 @@ public class HBaseConn {
     						{	
     							logger.info(new Integer(ind).toString()+(char)1+new Integer(token).toString()+(char)1+udid+(char)1+sdf.format(new Date())+(char)1+restime+(char)1+"0"+(char)1+tablenames.get(tokenorder));		
     						}
-    						executor.shutdown(); 
+    						executor.shutdownNow(); 
 							return res;
     					}
     				}
@@ -334,7 +334,7 @@ public class HBaseConn {
     	
     	long to = timeoutparam *1000000; 
     	logger.info("-1"+(char)1+new Integer(token).toString()+(char)1+udid+(char)1+sdf.format(new Date())+(char)1+to+(char)1+"2"+(char)1+tablenames.get(tokenorder));
-    	executor.shutdown();
+    	executor.shutdownNow();
     	return null;
     }
     
@@ -694,10 +694,10 @@ public class HBaseConn {
         	tables.add(table2);
         	tables.add(table3);
         	
+        	int token = TokenCache.getToken(0);
+        	
         	int testnum = Integer.parseInt(args[0]);
         	String udid = args[1]; //"001436292878"; //"000d00004d28";
-        	
-        	int token = 383756; //getTokenForTableKey();
         	
         	long starttime = System.nanoTime();
         	Result res1 = HBaseConn.getOneRecordInTable2(udid, table1, token); 
@@ -726,7 +726,7 @@ public class HBaseConn {
         	for(int i=0; i< testnum; i++)
         	{	
             	starttime = System.nanoTime();
-            	res2 = HBaseConn.getOneRecordInTableWithTimeout(udid, token, tables, 100, 35);
+            	res2 = HBaseConn.getOneRecordInTableWithTimeout(udid, 0, tables, 100, 35);
             	endtime = System.nanoTime();
             	t2 += (double)(endtime-starttime);
             	
@@ -786,11 +786,16 @@ public class HBaseConn {
     			ObjectInputStream o = new ObjectInputStream(b);
     			System.out.println("one-day sampling result:"+ o.readObject().toString());
         	}*/
-            
+        	 tables.get(0).close();
+        	 tables.get(1).close();
+        	 tables.get(2).close();
+        	
         } catch (Exception e) {
             e.printStackTrace();
         }
-        	
+        
+       
+        
         HBaseConn.shutdown();
         return;
     }
