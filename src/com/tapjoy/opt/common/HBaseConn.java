@@ -247,13 +247,13 @@ public class HBaseConn {
 		} 
     	finally
     	{
-    		executor.shutdown();
+    		executor.shutdownNow();
     	}
     	return res;
     }
     
 
-    public static Result getOneRecordInTableWithTimeout(String udid, int tokenorder, ArrayList<HTableInterface> tables, long timeoutparam, long traffic_time)  //timeout parameter in milliseconds
+    public static Result getOneRecordInTableWithTimeout(String udid, int tokenorder, ArrayList<HTableInterface> tables, long timeoutparam, long traffic_time) //timeout parameter in milliseconds
     {
     	if(tables == null || tables.isEmpty())
     		return null;
@@ -280,8 +280,6 @@ public class HBaseConn {
 			try {
 				Thread.sleep(traffic_time);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
     	}
     	
@@ -602,7 +600,7 @@ public class HBaseConn {
         return null;
     }
     
-    public static Result getOneRecordInTable2(String udid, HTableInterface table, int token) throws ClassNotFoundException, SQLException {  //added by LJ
+    public static Result getOneRecordInTable2(String udid, HTableInterface table, int token) throws ClassNotFoundException, SQLException, InterruptedException {  //added by LJ
     	byte[] rowKey = null;
     	
     	try {	
@@ -612,9 +610,8 @@ public class HBaseConn {
 			Result rs = table.get(get);
 			return rs; 
 		} catch (IOException e) {
-			logger.error("HBase getOneRecord - Exception happend. TableName: " + Bytes.toString(rttable.getTableName()) + "; RowKey: " + rowKey);
-			e.printStackTrace();
 		}
+    	
         return null;
     }
     
@@ -739,7 +736,7 @@ public class HBaseConn {
         			System.out.println("new result in progress: "+ o.readObject().toString());
         			internalcount++;
             		}
-            		if(internalcount != 1)
+            		if(internalcount > 1)
             			excesscount++;
             		count++;
             	}
