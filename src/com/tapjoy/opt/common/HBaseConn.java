@@ -682,110 +682,50 @@ public class HBaseConn {
         try {
         	init();
         	
-        	HTableInterface table1 = HBaseConn.getHPool().getTable("conversion_history_1month");  //("conversion_history"); //
-        	HTableInterface table2 = HBaseConn.getHPool().getTable("conversion_history_1week_I"); //("conversion_history");  //
-        	HTableInterface table3 = HBaseConn.getHPool().getTable("conversion_history_1week_II"); //("conversion_history");  //
-        	
-        	ArrayList<HTableInterface> tables = new ArrayList<HTableInterface>();
-        	tables.add(table1);
-        	tables.add(table2);
-        	tables.add(table3);
-        	
-        	int token = TokenCache.getToken(0);
+        	HTableInterface table1 = HBaseConn.getHPool().getTable(args[1]);  //("conversion_history"); //
+    
+        	int token = Integer.parseInt(args[3]);
         	
         	int testnum = Integer.parseInt(args[0]);
-        	String udid = args[1]; //"001436292878"; //"000d00004d28";
+        	String udid = args[2]; //"001436292878"; //"000d00004d28";
         	
         	long starttime = System.nanoTime();
         	Result res1 = HBaseConn.getOneRecordInTable2(udid, table1, token); 
         	long endtime = System.nanoTime();
         	System.out.println("warmup table1 time="+(endtime-starttime));
-        	
-        	starttime = System.nanoTime();
-        	res1 = HBaseConn.getOneRecordInTable2(udid, table2, token);
-        	endtime = System.nanoTime();
-        	System.out.println("warmup table2 time="+(endtime-starttime));
-        	
-          	starttime = System.nanoTime();
-        	res1 = HBaseConn.getOneRecordInTable2(udid, table3, token);
-        	endtime = System.nanoTime();
-        	System.out.println("warmup table3 time="+(endtime-starttime));
             
         	double t1 = 0.0;
-        	double t2 = 0.0;
         	
-        	Result res2 = null;
-        	
-        	int tocount = 0;
-        	int count = 0;
-        	int excesscount = 0;
+        	long empty_count = 0, excesscount = 0;
         	
         	for(int i=0; i< testnum; i++)
-        	{	
-            	starttime = System.nanoTime();
-            	res2 = HBaseConn.getOneRecordInTableWithTimeout(udid, 0, tables, 100, 35);
-            	endtime = System.nanoTime();
-            	t2 += (double)(endtime-starttime);
-            	
-            	if(res2 != null)
-            	{
-            		int internalcount = 0;
-            		for(KeyValue kv : res2.raw()){		   
-        			ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
-        			ObjectInputStream o = new ObjectInputStream(b);
-        			System.out.println("new result in progress: "+ o.readObject().toString());
-        			internalcount++;
-            		}
-            		if(internalcount > 1)
-            			excesscount++;
-            		count++;
-            	}
-            	else
-            	{
-            		System.out.println("new result timeout in progress!");
-            		tocount++;
-            	}
-            	
+        	{	   	
             	starttime = System.nanoTime();
             	res1 = HBaseConn.getOneRecordInTable2(udid, table1, token);
             	endtime = System.nanoTime();
             	t1 += (double)(endtime-starttime);
-        	}
-        	
-        	for(KeyValue kv : res1.raw()){	
-        		ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
-    			ObjectInputStream o = new ObjectInputStream(b);
-    			System.out.println("old result: "+ o.readObject().toString());
-        	}
-        	
-        	if(res2 != null)
-        	{
-        		for(KeyValue kv : res2.raw()){		   
-        			ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
+            	
+            	int tmpcount = 0;
+            	if(res1 == null)
+            	{
+            		System.out.println("return is null! something is wrong here!!!");
+            		continue;
+            	}
+            	
+            	for(KeyValue kv : res1.raw()){	
+            		ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
         			ObjectInputStream o = new ObjectInputStream(b);
-        			System.out.println("new result: "+ o.readObject().toString());
-        		}
+        			System.out.println("result: "+ o.readObject().toString());
+        			tmpcount++;
+            	}
+            	
+            	if(tmpcount > 1)
+            		excesscount ++;
+            	else if(tmpcount == 0)
+            		empty_count++;
         	}
-        	else
-        		System.out.println("we have a time out in the end!!!");
 
-        	System.out.println("time comparison: old="+t1/testnum+" new="+t2/testnum+" ontime count="+count+" timeout count="+tocount+" abnormal result count="+excesscount);
-        	
-        	/*HTableInterface table = HBaseConn.getHPool().getTable("conversion_history");
-        	    	 	
-        	long starttime = System.nanoTime();
-        	Result res1 = HBaseConn.getOneRecordInTable2("000d00004d28", table);
-        	long endtime = System.nanoTime();
-        	System.out.println("warmup one-day table time="+(endtime-starttime));
-        	
-        	for(KeyValue kv : res1.raw()){	
-        		ByteArrayInputStream b = new ByteArrayInputStream(kv.getValue());
-    			ObjectInputStream o = new ObjectInputStream(b);
-    			System.out.println("one-day sampling result:"+ o.readObject().toString());
-        	}*/
-        	 tables.get(0).close();
-        	 tables.get(1).close();
-        	 tables.get(2).close();
+        	System.out.println("time stats: avgtime="+t1/testnum+" empty result count="+empty_count+" excessive result count="+excesscount);
         	
         } catch (Exception e) {
             e.printStackTrace();

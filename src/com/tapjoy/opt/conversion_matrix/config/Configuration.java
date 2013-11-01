@@ -19,7 +19,7 @@ public class Configuration {
 	public static int OFFERWALL_CF_THRES = 100;
 	
 	public static long HBASE_TIMEOUT_THRES = 100;
-	public static long HBASE_TRAFFIC_TIME = 30;  //this time, in milliseconds, force the main thread to sleep before attempting to retrieve HBase result
+	public static long HBASE_TRAFFIC_TIME = 33;  //this time, in milliseconds, force the main thread to sleep before attempting to retrieve HBase result
 	
 	public static String RT_TABLE_NAME = "conversion_history_1month";  //one real-time HBase table for now
 	public static String[] AUX_TABLE_NAMES = {"conversion_history_1week_I", "conversion_history_1week_II"};
